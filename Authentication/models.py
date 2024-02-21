@@ -1,27 +1,47 @@
+from datetime import datetime, timedelta
+import random
+import string
+
 from django.db import models
 from django.contrib.auth.models import AbstractUser
-from datetime import datetime, timedelta
-from project.settings import AUTH_USER_MODEL
+
 # Create your models here.
 
 class User(AbstractUser):
-    email = models.EmailField(null=False, blank=False, unique=True, )
-    username = None
+    email = models.EmailField(null=False, blank=False, unique=True)
+    phone = models.CharField(max_length=15, null=True, blank=True)
+    name = models.CharField(max_length=255, null=False, blank=False)
     USERNAME_FIELD = "email"
-
+    # first_name = None
+    # username = None
 
 class ResetPassword(models.Model):
-    user_ = models.ForeignKey(AUTH_USER_MODEL, on_delete=models.CASCADE)
+    user_ = models.ForeignKey(User, on_delete=models.CASCADE)
     generatedCode = models.CharField(max_length=15)
     sendTime = models.DateTimeField()
     confirmedTime = models.DateTimeField(null=True, blank=True)
+    suspend = models.BooleanField(null=True, blank=True, default=False)
+
+    def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
+        self.generatedCode = ResetPassword.generate_code()
+        super(ResetPassword, self).save(*args, **kwargs)
+
+    @staticmethod
+    def generateUniqueCode():
+        code = ''
+        for i in range(6):
+            code += random.choice(string.digits)
+        return code
 
 
-
+    # to check that is passed 15 min from time of sned code
     def isCodeExpired(self):
-        quaterHour = timedelta(minutes=15)
         timeNow = datetime.now()
-        print(self.confirmedTime)
+        quaterHour = timedelta(minutes=15)
         if timeNow >= self.sendTime + quaterHour:
             return True
         return False
+
+        # if self.confirmedTime:
+        #     if timeNow >= self.confirmedTime + quaterHour:
+        #         return True
