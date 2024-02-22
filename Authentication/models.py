@@ -11,20 +11,27 @@ class User(AbstractUser):
     email = models.EmailField(null=False, blank=False, unique=True)
     phone = models.CharField(max_length=15, null=True, blank=True)
     name = models.CharField(max_length=255, null=False, blank=False)
+    suspend = models.BooleanField(null=True, blank=True, default=False)
     USERNAME_FIELD = "email"
     # first_name = None
     # username = None
 
-class ResetPassword(models.Model):
+class ResetCode(models.Model):
     user_ = models.ForeignKey(User, on_delete=models.CASCADE)
     generatedCode = models.CharField(max_length=15)
-    sendTime = models.DateTimeField()
+    sendTime = models.DateTimeField(default=datetime.now)
     confirmedTime = models.DateTimeField(null=True, blank=True)
-    suspend = models.BooleanField(null=True, blank=True, default=False)
 
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
-        self.generatedCode = ResetPassword.generate_code()
-        super(ResetPassword, self).save(*args, **kwargs)
+        if not self.pk:  # Check if the object is newly created
+            generated_code = ResetCode.generateUniqueCode()
+            while generated_code:
+                if ResetCode.objects.filter(generatedCode=generated_code).first():
+                    generated_code = ResetCode.generateUniqueCode()
+                else:
+                    break
+            self.generatedCode = generated_code
+        super(ResetCode, self).save(*args, **kwargs)
 
     @staticmethod
     def generateUniqueCode():

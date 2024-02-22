@@ -1,3 +1,5 @@
+from abc import ABC
+
 from rest_framework import serializers
 from .models import User
 
@@ -17,6 +19,15 @@ class RegisterSerializer(serializers.ModelSerializer):
 class ForgetPassword(serializers.Serializer):
     email = serializers.EmailField(required=True)
 
-class ResetCode(serializers.Serializer):
+class ResetCodeSerializer(serializers.Serializer):
     email = serializers.EmailField()
     code = serializers.CharField(max_length=10)
+
+class ResetPasswordSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    newPassword = serializers.CharField(required=True)
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ["email", "name", "phone"]
