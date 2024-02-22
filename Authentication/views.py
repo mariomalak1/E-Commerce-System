@@ -8,6 +8,7 @@ from .models import User, ResetCode
 from .serializer import RegisterSerializer, ForgetPassword,\
     UserSerializer, ResetCodeSerializer, ResetPasswordSerializer
 from utils import resetPasswordSendMail
+from django.contrib.auth import authenticate, login
 # Create your views here.
 
 
@@ -16,7 +17,17 @@ class UserAuthentication:
     @staticmethod
     @api_view(["GET"])
     def login(request):
-        pass
+        serializer = SignInSerializer(data = request.data)
+        if serializer.is_valid():
+            user = User.objects.filter(serializer.validated_data.get("email")).first()
+            if user:
+                user = authenticate(email=user.email, password=serializer.validated_data.get("password"))
+                login(request, user)
+                return Response({"message": "user login succssfully"}, status=status.HTTP_200_OK)
+            else:
+                return Response({"errors":"no user with this email"}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @staticmethod
     @api_view(["POST"])

@@ -16,6 +16,10 @@ class RegisterSerializer(serializers.ModelSerializer):
         user_.save()
         return user_
 
+class SignInSerializer(serializers.Serializer):
+    email = serializers.EmailField(required=True)
+    password = serializers.CharField(required=True)
+
 class ForgetPassword(serializers.Serializer):
     email = serializers.EmailField(required=True)
 
@@ -26,6 +30,8 @@ class ResetCodeSerializer(serializers.Serializer):
 class ResetPasswordSerializer(serializers.Serializer):
     email = serializers.EmailField()
     newPassword = serializers.CharField(required=True)
+
+
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
