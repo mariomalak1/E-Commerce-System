@@ -3,6 +3,7 @@ import datetime
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, APIView
 from rest_framework import status
+from rest_framework.authtoken.models import Token
 
 from .models import User, ResetCode
 from .serializer import RegisterSerializer, ForgetPassword,\
@@ -13,6 +14,26 @@ from django.contrib.auth import authenticate, login, logout
 
 
 class UserAuthentication:
+    @staticmethod
+    def get_token_or_none(request):
+        authorization_header = request.META.get('HTTP_AUTHORIZATION')
+        if not authorization_header:
+            authorization_header = request.data.get("token")
+            if not authorization_header:
+                return None
+        try:
+            # Split the header value to extract the token
+            auth_type, token = authorization_header.split(' ')
+        except:
+            token = authorization_header
+
+        if token:
+            token_ = Token.objects.filter(key=token).first()
+            if token_:
+                return token_
+
+        return None
+
 
     @staticmethod
     @api_view(["GET"])
@@ -25,9 +46,12 @@ class UserAuthentication:
                 user = authenticate(request, username=user.username, password=serializer.validated_data.get("password"))
                 if user:
                     login(request, user)
+                    token = Token.objects.filter(user=user).first()
+                    if not token:
+                        token = Token.objects.create(user=user)
                 else:
                     return Response({"message":"invalid email or password"}, status=status.HTTP_400_BAD_REQUEST)
-                return Response({"message": "user login succssfully"}, status=status.HTTP_200_OK)
+                return Response({"message": "user login succssfully", "token":token.key}, status=status.HTTP_200_OK)
             else:
                 return Response({"errors":"no user with this email"}, status=status.HTTP_400_BAD_REQUEST)
         else:

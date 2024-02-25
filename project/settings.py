@@ -38,7 +38,11 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
 
+
     "rest_framework",
+    "rest_framework.authtoken",
+
+
     "Authentication",
 ]
 
@@ -134,6 +138,13 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # change the defualt django user
 AUTH_USER_MODEL = "Authentication.User"
+
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.TokenAuthentication',
+    ),
+}
 
 
 # send email configuration
