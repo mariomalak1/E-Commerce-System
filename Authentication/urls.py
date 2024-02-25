@@ -10,4 +10,5 @@ urlpatterns = [
     path("verfiyResetPassword/", views.UserAuthentication.verfiyResetPassword, name="verfiyResetPassword"),
     path("resetPassword/", views.UserAuthentication.resetPassword, name="resetPassword"),
     path("updateUserData/", views.UserAuthentication.updateUserData, name="updateUserData"),
+    path("updateLoggedUserPassword/", views.UserAuthentication.updateLoggedUserPassword, name="updateLoggedUserPassword"),
 ]

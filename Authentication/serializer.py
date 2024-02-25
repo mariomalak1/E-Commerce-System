@@ -41,3 +41,8 @@ class UserSerializer(serializers.ModelSerializer):
         if self.partial:
             self.fields.get("email").validators = []
         return super().is_valid(raise_exception=raise_exception)
+
+class UpdateUserPassword(serializers.Serializer):
+    currentPassword = serializers.CharField(required=True)
+    password = serializers.CharField(required=True)
+    rePassword = serializers.CharField(required=True)

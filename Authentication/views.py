@@ -7,7 +7,7 @@ from rest_framework.authtoken.models import Token
 
 from .models import User, ResetCode
 from .serializer import RegisterSerializer, ForgetPassword,\
-    UserSerializer, ResetCodeSerializer, ResetPasswordSerializer, SignInSerializer
+    UserSerializer, ResetCodeSerializer, ResetPasswordSerializer, SignInSerializer, UpdateUserPassword
 from .utils import resetPasswordSendMail, getDataFromPaginator
 from django.contrib.auth import authenticate, login, logout
 # Create your views here.
@@ -103,7 +103,35 @@ class UserAuthentication:
             else:
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         else:
-            return Response({"error": "you must authorized"}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response({"error": "you must authorize"}, status=status.HTTP_401_UNAUTHORIZED)
+
+    @staticmethod
+    @api_view(["PATCH"])
+    def updateLoggedUserPassword(request):
+        token = UserAuthentication.get_token_or_none(request)
+        if token:
+            serializer = UpdateUserPassword(data=request.data)
+            if serializer.is_valid():
+                currentPassword = serializer.validated_data.get("currentPassword")
+                password = serializer.validated_data.get("password")
+                rePassword = serializer.validated_data.get("rePassword")
+                user = token.user
+                if user.check_password(currentPassword):
+                    if password == rePassword:
+                        user.set_password(password)
+                        user.save()
+                        userSerializer = UserSerializer(user)
+                        response = {"user":userSerializer.data, "token":token.key}
+                        return Response(response, status=status.HTTP_200_OK)
+                    else:
+                        return Response({"errors":"password not match"}, status=status.HTTP_406_NOT_ACCEPTABLE)
+                else:
+                    return Response({"errors": "current password not valid"}, status=status.HTTP_406_NOT_ACCEPTABLE)
+            else:
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response({"error": "you must authorize"}, status=status.HTTP_401_UNAUTHORIZED)
+
 
     # rest password functions
     @staticmethod
