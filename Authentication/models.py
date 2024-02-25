@@ -19,10 +19,10 @@ class User(AbstractUser):
 class ResetCode(models.Model):
     resetUser = models.ForeignKey(User, on_delete=models.CASCADE)
     generatedCode = models.CharField(max_length=15)
-    sendTime = models.DateTimeField(default=datetime.now)
+    sendTime = models.DateTimeField()
     confirmedTime = models.DateTimeField(null=True, blank=True)
 
-    def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
+    def save(self, *args, **kwargs):
         if not self.pk:  # Check if the object is newly created
             generated_code = ResetCode.generateUniqueCode()
             while generated_code:
@@ -31,6 +31,7 @@ class ResetCode(models.Model):
                 else:
                     break
             self.generatedCode = generated_code
+        self.sendTime = datetime.now()
         super(ResetCode, self).save(*args, **kwargs)
 
     @staticmethod
@@ -43,9 +44,14 @@ class ResetCode(models.Model):
 
     # to check that is passed 15 min from time of sned code
     def isCodeExpired(self):
+        print(self.sendTime)
+        print(type(self.sendTime))
         timeNow = datetime.now()
-        quaterHour = timedelta(minutes=15)
-        if timeNow >= self.sendTime + quaterHour:
+        quaterHour = 15*60   #timedelta(minutes=15)
+        timeAfterQuarter = (self.sendTime.timestamp() + quaterHour)
+        print(timeNow)
+        print(timeAfterQuarter)
+        if timeNow.timestamp() >= timeAfterQuarter:
             return True
         return False
 

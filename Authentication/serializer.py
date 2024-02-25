@@ -6,7 +6,7 @@ from .models import User
 class RegisterSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ["email", "name", "password", "phone"]
+        fields = ["email", "name", "password", "phone", "rePassword"]
 
     rePassword = serializers.CharField(required=True)
 
