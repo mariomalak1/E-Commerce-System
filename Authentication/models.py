@@ -11,12 +11,13 @@ class User(AbstractUser):
     phone = models.CharField(max_length=15, null=True, blank=True)
     name = models.CharField(max_length=255, null=False, blank=False)
     suspend = models.BooleanField(null=True, blank=True, default=False)
-    USERNAME_FIELD = "email"
-    # first_name = None
-    # username = None
+
+    def save(self, *args, **kwargs):
+        self.username = self.email
+        super(User, self).save(*args, **kwargs)
 
 class ResetCode(models.Model):
-    user_ = models.ForeignKey(User, on_delete=models.CASCADE)
+    resetUser = models.ForeignKey(User, on_delete=models.CASCADE)
     generatedCode = models.CharField(max_length=15)
     sendTime = models.DateTimeField(default=datetime.now)
     confirmedTime = models.DateTimeField(null=True, blank=True)

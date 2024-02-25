@@ -1,5 +1,4 @@
-from rest_framework import viewsets
-from consult.models import Consult
+# from rest_framework import viewsets
 
 from project.settings import EMAIL_HOST_USER
 
