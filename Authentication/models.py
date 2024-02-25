@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 import random
 import string
+import pytz
 
 from django.db import models
 from django.contrib.auth.models import AbstractUser
@@ -31,7 +32,7 @@ class ResetCode(models.Model):
                 else:
                     break
             self.generatedCode = generated_code
-        self.sendTime = datetime.now()
+            self.sendTime = datetime.now()
         super(ResetCode, self).save(*args, **kwargs)
 
     @staticmethod
@@ -42,19 +43,22 @@ class ResetCode(models.Model):
         return code
 
 
-    # to check that is passed 15 min from time of sned code
+    # to check that is passed 15 min from time of send code
     def isCodeExpired(self):
-        print(self.sendTime)
-        print(type(self.sendTime))
         timeNow = datetime.now()
-        quaterHour = 15*60   #timedelta(minutes=15)
-        timeAfterQuarter = (self.sendTime.timestamp() + quaterHour)
-        print(timeNow)
-        print(timeAfterQuarter)
-        if timeNow.timestamp() >= timeAfterQuarter:
+        quaterHour = timedelta(minutes=15)
+        timeAfterQuarter = self.sendTime + quaterHour
+
+        # to make timeNow aware datetime
+        timeNow = timeNow.replace(tzinfo=pytz.utc)
+
+        if timeNow >= timeAfterQuarter:
             return True
         return False
 
         # if self.confirmedTime:
         #     if timeNow >= self.confirmedTime + quaterHour:
         #         return True
+
+    def __str__(self):
+        return self.generatedCode

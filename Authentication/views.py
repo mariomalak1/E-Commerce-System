@@ -8,7 +8,7 @@ from rest_framework.authtoken.models import Token
 from .models import User, ResetCode
 from .serializer import RegisterSerializer, ForgetPassword,\
     UserSerializer, ResetCodeSerializer, ResetPasswordSerializer, SignInSerializer
-from .utils import resetPasswordSendMail
+from .utils import resetPasswordSendMail, getDataFromPaginator
 from django.contrib.auth import authenticate, login, logout
 # Create your views here.
 
@@ -34,6 +34,17 @@ class UserAuthentication:
 
         return None
 
+    @staticmethod
+    @api_view(["GET"])
+    def token_check_found(request):
+        token_ = UserAuthentication.get_token_or_none(request)
+        if token_ is None:
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
+        token_required = Token.objects.filter(key=token_).first()
+        if token_required:
+            return Response(status=status.HTTP_202_ACCEPTED)
+        else:
+            return Response(status=status.HTTP_404_NOT_FOUND)
 
     @staticmethod
     @api_view(["GET"])
@@ -73,12 +84,26 @@ class UserAuthentication:
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
     # change user data only if he is logged
     @staticmethod
     @api_view(["PATCH"])
     def updateUserData(request):
-        pass
+        token = UserAuthentication.get_token_or_none(request)
+        if token:
+            serializer = UserSerializer(data=request.data, instance=token.user, partial=True)
+            if serializer.is_valid():
+                email = serializer.validated_data.get("email")
+                user = User.objects.filter(email=email).first()
+                if user:
+                    if user != token.user:
+                        return Response({"errors": "this email is not yours"})
+                user = serializer.update(instance=token.user, validated_data=serializer.validated_data)
+                userSerializer = UserSerializer(user)
+                return Response(userSerializer.data, status=status.HTTP_200_OK)
+            else:
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response({"error": "you must authorized"}, status=status.HTTP_401_UNAUTHORIZED)
 
     # rest password functions
     @staticmethod
@@ -143,6 +168,7 @@ class UserAuthentication:
                     newPassword = serializer.validated_data.get("newPassword")
                     user.set_password(newPassword)
                     user.save()
+                    resetCode.delete()
                     return Response({"message":"password successfully changed"}, status=status.HTTP_200_OK)
                 else:
                     return Response({"errors":"the reset code not verfied yet"}, status=status.HTTP_400_BAD_REQUEST)
@@ -158,5 +184,13 @@ class UserAuthentication:
     # decorator that check on authorization
     def getAllUsers(reuqest):
         users = User.objects.all()
-        serializer = UserSerializer(users, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        allData = getDataFromPaginator(reuqest, users)
+
+        if allData:
+            required_page, per_page, paginator = allData
+            serializer = UserSerializer(paginator.get_page(required_page), many=True)
+            metaData = {"numberOfPages":paginator.num_pages, "currentPage": required_page, "perPage":per_page}
+            response = {"result": paginator.count, "metadata": metaData, "data": serializer.data}
+            return Response(response, status=status.HTTP_200_OK)
+        else:
+            return Response({"errors":"put valid page number and per page number"}, status=status.HTTP_400_BAD_REQUEST)

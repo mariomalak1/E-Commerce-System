@@ -32,8 +32,12 @@ class ResetPasswordSerializer(serializers.Serializer):
     newPassword = serializers.CharField(required=True)
 
 
-
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ["email", "name", "phone"]
+
+    def is_valid(self, raise_exception=False):
+        if self.partial:
+            self.fields.get("email").validators = []
+        return super().is_valid(raise_exception=raise_exception)
