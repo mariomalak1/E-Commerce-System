@@ -3,8 +3,8 @@ from rest_framework import status
 from rest_framework.decorators import api_view
 
 from project.utilis import getDataFromPaginator
-from .serializer import BrandSerializer
-from .models import Brand
+from .serializer import BrandSerializer, CategorySerializer
+from .models import Brand, Category
 # Create your views here.
 
 class BrandView:
@@ -42,3 +42,26 @@ class BrandView:
     @staticmethod
     def deleteBrand(request):
         pass
+
+
+class CategoryView:
+    @staticmethod
+    @api_view(["GET"])
+    def getCategories(request):
+        categories = Category.objects.all()
+        allData = getDataFromPaginator(request, categories)
+
+        if allData:
+            required_page, per_page, paginator, metaData = allData
+            serializer = CategorySerializer(paginator.get_page(required_page), many=True)
+            response = {"result": paginator.count, "metadata": metaData, "data": serializer.data}
+            return Response(response, status=status.HTTP_200_OK)
+        else:
+            return Response({"errors": "put valid page number and per page number"}, status=status.HTTP_400_BAD_REQUEST)
+
+    @staticmethod
+    @api_view(["GET"])
+    def getSpecificCategory(request, id_):
+        category = Category.objects.filter(ref=id_).first()
+        serializer = CategorySerializer(category)
+        return Response(serializer.data, status=status.HTTP_200_OK)
