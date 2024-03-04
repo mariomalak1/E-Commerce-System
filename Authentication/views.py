@@ -212,9 +212,9 @@ class UserAuthentication:
     @staticmethod
     @api_view(["GET"])
     # decorator that check on authorization
-    def getAllUsers(reuqest):
+    def getAllUsers(request):
         users = User.objects.all()
-        allData = getDataFromPaginator(reuqest, users)
+        allData = getDataFromPaginator(request, users)
 
         if allData:
             required_page, per_page, paginator, metaData = allData

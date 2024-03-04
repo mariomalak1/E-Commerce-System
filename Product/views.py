@@ -12,7 +12,7 @@ class BrandView:
     @api_view(["GET"])
     def getBrands(request):
         brands = Brand.objects.all()
-        allData = getDataFromPaginator(reuqest, brands)
+        allData = getDataFromPaginator(request, brands)
 
         if allData:
             required_page, per_page, paginator, metaData = allData
