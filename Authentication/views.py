@@ -1,5 +1,7 @@
 import datetime
 
+from django.contrib.auth import authenticate, login, logout
+
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, APIView
 from rest_framework import status
@@ -8,8 +10,8 @@ from rest_framework.authtoken.models import Token
 from .models import User, ResetCode
 from .serializer import RegisterSerializer, ForgetPassword,\
     UserSerializer, ResetCodeSerializer, ResetPasswordSerializer, SignInSerializer, UpdateUserPassword
-from .utils import resetPasswordSendMail, getDataFromPaginator
-from django.contrib.auth import authenticate, login, logout
+from .utils import resetPasswordSendMail
+from project.utilis import getDataFromPaginator
 # Create your views here.
 
 
@@ -215,9 +217,8 @@ class UserAuthentication:
         allData = getDataFromPaginator(reuqest, users)
 
         if allData:
-            required_page, per_page, paginator = allData
+            required_page, per_page, paginator, metaData = allData
             serializer = UserSerializer(paginator.get_page(required_page), many=True)
-            metaData = {"numberOfPages":paginator.num_pages, "currentPage": required_page, "perPage":per_page}
             response = {"result": paginator.count, "metadata": metaData, "data": serializer.data}
             return Response(response, status=status.HTTP_200_OK)
         else:

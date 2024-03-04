@@ -44,6 +44,7 @@ INSTALLED_APPS = [
 
 
     "Authentication",
+    "Product",
 ]
 
 MIDDLEWARE = [
@@ -136,8 +137,16 @@ STATIC_URL = "static/"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+
+MEDIA_ROOT = str(BASE_DIR) + '/Media/'
+
+MEDIA_URL = '/Media/'
+
+
 # change the defualt django user
 AUTH_USER_MODEL = "Authentication.User"
+
+
 
 
 REST_FRAMEWORK = {
