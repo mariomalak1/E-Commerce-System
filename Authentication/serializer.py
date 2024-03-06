@@ -6,7 +6,7 @@ from .models import User
 class RegisterSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ["email", "name", "password", "phone"]
+        fields = ["email", "name", "password", "phone", "rePassword"]
 
     rePassword = serializers.CharField(required=True)
 
@@ -32,8 +32,17 @@ class ResetPasswordSerializer(serializers.Serializer):
     newPassword = serializers.CharField(required=True)
 
 
-
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ["email", "name", "phone"]
+
+    def is_valid(self, raise_exception=False):
+        if self.partial:
+            self.fields.get("email").validators = []
+        return super().is_valid(raise_exception=raise_exception)
+
+class UpdateUserPassword(serializers.Serializer):
+    currentPassword = serializers.CharField(required=True)
+    password = serializers.CharField(required=True)
+    rePassword = serializers.CharField(required=True)
