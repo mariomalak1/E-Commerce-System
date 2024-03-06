@@ -85,6 +85,9 @@ class SubCategory(models.Model):
     updated_at = models.DateTimeField(null=True, blank=True)
     ref = models.SlugField(null=False, unique=True, blank=True, allow_unicode=True, max_length=120)
 
+    class Meta:
+        ordering = ["ref", "create_at", "updated_at"]
+
     def save(self, *args, **kwargs):
         self.ref = slugify(self.name)
         super().save(*args, **kwargs)

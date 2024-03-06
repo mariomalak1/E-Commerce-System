@@ -2,8 +2,8 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import api_view
 
-from project.utilis import getDataFromPaginator
-from .serializer import BrandSerializer, CategorySerializer
+from project.utilis import getDataFromPaginator, defualtResponse
+from .serializer import BrandSerializer, CategorySerializer, SubCategorySerializer
 from .models import Brand, Category, SubCategory
 # Create your views here.
 
@@ -13,14 +13,8 @@ class BrandView:
     def getBrands(request):
         brands = Brand.objects.all()
         allData = getDataFromPaginator(request, brands)
+        return defualtResponse(allData, BrandSerializer)
 
-        if allData:
-            required_page, per_page, paginator, metaData = allData
-            serializer = BrandSerializer(paginator.get_page(required_page), many=True)
-            response = {"result": paginator.count, "metadata": metaData, "data": serializer.data}
-            return Response(response, status=status.HTTP_200_OK)
-        else:
-            return Response({"errors":"put valid page number and per page number"}, status=status.HTTP_400_BAD_REQUEST)
 
     @staticmethod
     @api_view(["GET"])
@@ -50,14 +44,7 @@ class CategoryView:
     def getCategories(request):
         categories = Category.objects.all()
         allData = getDataFromPaginator(request, categories)
-
-        if allData:
-            required_page, per_page, paginator, metaData = allData
-            serializer = CategorySerializer(paginator.get_page(required_page), many=True)
-            response = {"result": paginator.count, "metadata": metaData, "data": serializer.data}
-            return Response(response, status=status.HTTP_200_OK)
-        else:
-            return Response({"errors": "put valid page number and per page number"}, status=status.HTTP_400_BAD_REQUEST)
+        return defualtResponse(allData, CategorySerializer)
 
     @staticmethod
     @api_view(["GET"])
@@ -66,5 +53,29 @@ class CategoryView:
         serializer = CategorySerializer(category)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+
 class SubCategoryView:
-    pass
+    @staticmethod
+    @api_view(["GET"])
+    def getAllSubCategories(request):
+        subCategories = SubCategory.objects.all()
+        allData = getDataFromPaginator(request, subCategories)
+
+        return defualtResponse(allData, SubCategorySerializer)
+
+
+    @staticmethod
+    @api_view(["GET"])
+    def getAllSubCategoriesInCategory(request, id_):
+        subCategories = SubCategory.objects.filter(category__ref=id_).all()
+        allData = getDataFromPaginator(request, subCategories)
+
+        return defualtResponse(allData, SubCategorySerializer)
+
+
+    @staticmethod
+    @api_view(["GET"])
+    def getSpecificSubCategory(request, id_):
+        subCategories = SubCategory.objects.filter(ref=id_).first()
+        serializer = SubCategorySerializer(subCategories)
+        return Response(serializer.data, status=status.HTTP_200_OK)
