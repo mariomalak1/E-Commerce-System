@@ -76,3 +76,18 @@ class Category(models.Model):
 
     def __str__(self):
         return self.ref
+
+
+class SubCategory(models.Model):
+    name = models.CharField(max_length=100, blank=False, null=False, unique=True)
+    category = models.ForeignKey(Category, on_delete=models.CASCADE)
+    create_at = models.DateTimeField(null=False, blank=False)
+    updated_at = models.DateTimeField(null=True, blank=True)
+    ref = models.SlugField(null=False, unique=True, blank=True, allow_unicode=True, max_length=120)
+
+    def save(self, *args, **kwargs):
+        self.ref = slugify(self.name)
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return self.ref + " -> " + self.category.ref

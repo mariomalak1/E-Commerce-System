@@ -4,7 +4,7 @@ from rest_framework.decorators import api_view
 
 from project.utilis import getDataFromPaginator
 from .serializer import BrandSerializer, CategorySerializer
-from .models import Brand, Category
+from .models import Brand, Category, SubCategory
 # Create your views here.
 
 class BrandView:
@@ -65,3 +65,6 @@ class CategoryView:
         category = Category.objects.filter(ref=id_).first()
         serializer = CategorySerializer(category)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+class SubCategoryView:
+    pass
