@@ -106,7 +106,7 @@ class SubCategory(models.Model):
 
 class Product(models.Model):
     def uploadProductCoverImagePath(self, filename):
-        return "Products\\" + "\\" + self.title + "\\Cover\\" + filename
+        return "Products\\" + "\\" + self.ref + "\\Cover\\" + filename
 
     brand = models.ForeignKey(Brand, on_delete=models.SET_NULL, null=True, blank=False)
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=False)
@@ -191,7 +191,7 @@ class Product(models.Model):
 
 class Productmages(models.Model):
     def uploadToPath(self, filename):
-        return "Products\\" + "\\" + self.product.title + "\\images\\" + filename
+        return "Products\\" + "\\" + self.product.ref + "\\images\\" + filename
 
     image = models.ImageField(upload_to=uploadToPath)
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
@@ -222,3 +222,6 @@ class Productmages(models.Model):
         except:
             pass
         super().delete(*args, **kwargs)
+
+    def __str__(self):
+        return self.product.ref
